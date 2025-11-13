@@ -1,5 +1,6 @@
 import { prisma } from "@/database";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 
 
 export default async function BlockPage({params,}: {params : Promise<{id:string}>;
@@ -10,7 +11,18 @@ export default async function BlockPage({params,}: {params : Promise<{id:string}
         where: { id: Number(blockId)},
     });
 
-    if (!block) return <p>Block not found</p>
+    if (!block) return notFound();
+
+    async function deleteBlock() {
+    "use server"
+
+    await prisma.block.delete({
+        where: {id: Number(blockId)},
+    })
+
+    redirect("/")
+        
+    }
 
     return(
 
@@ -18,15 +30,17 @@ export default async function BlockPage({params,}: {params : Promise<{id:string}
              <Link href={"/"}><button className="AppButton" id="NavHomeButton">Go Back Home</button></Link>
             <div className="AppBody">
             <div className="CodeHeader">
-            <h1 className="text-2xl font-semibold mb-4"> {block.title}</h1> 
+           
+            <h1 className="Title"> {block.title}</h1> 
             </div>
-            <textarea
-               className="w-full h-96 p-2 border rounded-md"
-                 defaultValue={block.code || ""}
+            <p className="FormField" id="CodeTextArea"> {block.code || ""}</p>
+    
 
-            />
             <Link href={`/blocks/${block.id}/edit`}><button className="AppButton">Edit Code</button></Link>
-            <button className="AppButton" id="delete">Delete</button>
+             <form action={deleteBlock}>
+            <button type="submit" className="AppButton" id="delete">Delete</button>
+            </form>
+            
             </div>
 
         </main>
